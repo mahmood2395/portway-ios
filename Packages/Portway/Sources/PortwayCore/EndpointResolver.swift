@@ -11,8 +11,8 @@
 // lose to slow and right.
 //
 //   1. DNS over HTTPS, 1.1.1.1 and 8.8.8.8 by IP literal (no bootstrap lookup), in parallel.
-//   2. The panel's endpoint_ip hint for this hostname, if recent.
-//   3. Plain DNS to public resolvers (PlainDNS): no device or carrier cache, not blocked like DoH.
+//   2. Plain DNS to public resolvers (PlainDNS): no device or carrier cache, not blocked like DoH.
+//   3. The panel's endpoint_ip for this hostname (the operator's recorded address), if fetched recently.
 //   4. The system resolver.
 //   5. An old panel hint.
 //
@@ -86,12 +86,14 @@ public actor EndpointResolver {
     /// strict order of trust — fast and wrong must lose to slow and right:
     ///
     ///   1. DoH (1.1.1.1, 8.8.8.8): authenticated, and no cache between us and the authority.
-    ///   2. The panel's hint, if recent (`refreshPanel` asks again, in parallel): authenticated,
-    ///      and the operator's own word on where the server is.
-    ///   3. Plain DNS to public resolvers: skips the phone's and the carrier's caches — the caches
+    ///   2. Plain DNS to public resolvers: skips the phone's and the carrier's caches — the caches
     ///      that made "restart your phone" the only fix — and works where DoH is blocked. Not
     ///      authenticated, so answers in private or reserved ranges (what injectors hand out for
-    ///      filtered names) are discarded, and it ranks below the panel.
+    ///      filtered names) are discarded.
+    ///   3. The panel's hint, if fetched recently (`refreshPanel` asks again, in parallel). It is
+    ///      the router address the operator RECORDED, not a detected one: updated when the panel
+    ///      moves a server, stale if the address changes any other way. So it ranks below the
+    ///      hostname's own DNS and is what saves the day when both DNS paths are blocked.
     ///   4. The system resolver: may be stale, but better than nothing.
     ///   5. An old panel hint.
     ///
@@ -129,11 +131,11 @@ public actor EndpointResolver {
         // "there is no network" — only the first should demote it.
         defer { if dohFailed { dohFailures += 1 } }
 
-        _ = await withDeadline(max(0, deadline.remaining - 1), { await panel.value; return true })
+        if let hit = answer(await withDeadline(max(0, deadline.remaining - 1), { await udp.value }) ?? [], .udp) { return hit }
+
+        _ = await withDeadline(max(0, deadline.remaining - 0.5), { await panel.value; return true })
         let hint = s.hint(host)
         if let hint, Date().timeIntervalSince(hint.at) < Self.hintFreshness, let hit = answer([hint.ip], .panel) { return hit }
-
-        if let hit = answer(await withDeadline(max(0, deadline.remaining - 0.5), { await udp.value }) ?? [], .udp) { return hit }
         if let hit = answer(await withDeadline(deadline.remaining, { await system.value }) ?? [], .system) { return hit }
         if let hint, let hit = answer([hint.ip], .stalePanel) { return hit }
         dohFailed = false   // nothing answered at all: offline, not blocked

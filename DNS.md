@@ -24,16 +24,17 @@ in this order:
 | # | Source | Why it's trusted in this position |
 |---|---|---|
 | 1 | DNS over HTTPS (1.1.1.1, 8.8.8.8) | No cache between us and the authority. Often blocked in Iran; after two failures it's probed but not waited on. |
-| 2 | Plain DNS, UDP port 53, sent directly to 1.1.1.1 / 8.8.8.8 / 9.9.9.9 | Skips the phone's and the carrier's caches, and usually works where DoH is blocked. |
-| 3 | The panel's `endpoint_ip` hint, if younger than 10 minutes (refreshed during a restart) | The operator's own word on where the server is. |
+| 2 | Plain DNS, UDP port 53, sent directly to 1.1.1.1 / 8.8.8.8 / 9.9.9.9 | Skips the phone's and the carrier's caches, and usually works where DoH is blocked. Answers in private or reserved ranges (what DNS injection hands out) are discarded. |
+| 3 | The panel's `endpoint_ip`, if fetched in the last 10 minutes (refreshed during a restart) | The address the operator recorded in the panel. It is updated when the panel moves a server, not detected, so it ranks below the hostname's own DNS. It is what finds the server when both DNS paths are blocked. |
 | 4 | The system resolver | Possibly stale, but better than nothing. |
 | 5 | An older panel hint | Last resort. |
 
 It also does three more things:
 
-- **Looks for a *different* address after a failure.** When the link has just failed, an answer
-  offering a new IP beats one repeating the dead IP. If every source agrees on the old IP, the old
-  IP stands.
+- **Looks for a *different* address after a failure, but never trusts a worse source for it.**
+  When a name has several IPs, the one that just failed is skipped. Across sources the order above
+  stays strict, so a short outage at the *right* address never sends the tunnel to an old one a
+  carrier cache still holds.
 - **Switches without waiting for the tunnel to fail.** The 3-minute check applies a new address as
   soon as the one in use is no longer among the answers. Checking "among" rather than "equal"
   means round-robin DNS doesn't cause restarts.
@@ -60,9 +61,10 @@ These are simulated in `Packages/Portway/Tests/PortwayCoreTests/DNSRecoveryTests
 ## What the operator can do to make it faster
 
 - **Keep the record's TTL at 60 s.** The public resolvers above honour it; carriers are bypassed.
-- **Keep `endpoint_ip` in `/api/peer/info` up to date.** When DoH and plain DNS are both blocked,
-  it is what finds the new address. The panel already sends it; the app refreshes it during a
-  restart.
+- **Move servers through the panel (the migration wizard) when possible,** so `endpoint_ip` in
+  `/api/peer/info` changes with the move. When DoH and plain DNS are both blocked, it is what
+  finds the new address. It is recorded, not detected: an IP that changes outside the panel stays
+  stale until someone updates it there.
 - **Put `PersistentKeepalive = 25` in every config.** It is what lets the app spot a dead link at
   155 s instead of waiting the full 180 s window, and it keeps NAT mappings alive anyway.
 - **When moving servers, keep the old address answering for a few minutes if possible.** Users

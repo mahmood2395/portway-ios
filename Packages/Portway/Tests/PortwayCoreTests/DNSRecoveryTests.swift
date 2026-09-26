@@ -80,10 +80,16 @@ final class ResolverOrderTests: XCTestCase {
         XCTAssert(wait { await r.resolve("vpn.example.net") }?.source == .panel)
     }
 
-    /// DNS injection hands out fake private addresses; the authenticated panel outranks plain DNS.
-    func testFreshPanelHintBeatsPlainDNS() {
-        let r = resolver(doh: .empty, udp: .answer(["203.0.113.66"]), system: .empty, hint: (new, 60))
+    /// The panel's endpoint_ip is the operator's recorded address, not a detected one (confirmed by
+    /// the panel team): the hostname's own DNS outranks it, and it answers when DNS is blocked.
+    func testPlainDNSBeatsPanelRecord() {
+        let r = resolver(doh: .empty, udp: .answer([new]), system: .empty, hint: (old, 60))
         XCTAssert(wait { await r.resolve("vpn.example.net") }?.address == new)
+    }
+
+    func testPanelRecordAnswersWhenBothDNSPathsAreBlocked() {
+        let r = resolver(doh: .hang, udp: .hang, system: .answer([old]), hint: (new, 60))
+        XCTAssert(wait { await r.resolve("vpn.example.net") }?.source == .panel)
     }
 
     func testInjectedPrivateAnswerIsDiscarded() {

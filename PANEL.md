@@ -1,20 +1,28 @@
 # Panel contract — what the iOS app needs from mikrotik-manager
 
-**Status: proposal, not yet agreed.** Written for the panel's owner (mikrotik-manager). The iOS app
-talks to the same endpoints as Android (see the Android repo's `SESSION.md`), and a handful of
-fields differ by platform.
+**Status: agreed (2026-09-26).** The panel's owner (mikrotik-manager, commit `db8041e`) verified
+every field below against the **stored rows**, not just the 200 responses: silent field drops have
+happened twice before. The iOS app talks to the same endpoints as Android (see the Android repo's
+`SESSION.md`), and a handful of fields differ by platform.
 
-The panel **stores what it is sent** rather than rejecting unknown shapes. A guessed field would
-land in the database silently, and silent field drops have already happened twice in panel handlers.
-So everything below that writes session data is behind a build flag, `PORTWAY_SESSION_PROTOCOL`,
-which is **off**. With it off, the app behaves exactly as it does when the panel is unreachable:
-the protocol is fail-open by design.
+The one-device protocol is **on** (`PORTWAY_SESSION_PROTOCOL = YES` in `Config/Base.xcconfig`). It
+stays fail-open: no panel, a timeout, a 5xx or a 429 always means "connect anyway".
 
-What works today, with the flag off:
+What the panel settled:
 
-- `GET /api/peer/info`: account card, days left, expiry warnings, the `panel_url` move, the
-  `endpoint_ip` resolver hint, and `city` / `country_code`. It is read-only and identical to Android.
-- Nothing else is sent.
+- `platform: "ios"` is stored as sent. No value means Android. The version spread on the page is
+  grouped by platform.
+- `os_version` and `device_name` are labels, stored verbatim and never parsed.
+- `device_id`: one per install, same as Android. The page counts distinct ids.
+- `always_on` / `lockdown` keep their names. The page labels them "on demand" and "all networks"
+  for iOS rows.
+- `battery_unrestricted` is omitted and stays unknown, never "off".
+- `/api/peer/info` is limited to 240 requests a minute per IP (raised from 30 for carrier NAT).
+- **Update feed: not yet.** `/api/app/latest` returns the Android manifest, which the iOS app
+  ignores, so it never shows an update card. Nothing depends on it.
+- **`endpoint_ip` is recorded, not detected.** It changes when the panel moves a server and is
+  otherwise as current as the operator keeps it. The app therefore ranks it below the hostname's
+  own DNS (DNS.md).
 
 ## 1. Platform and version numbering
 

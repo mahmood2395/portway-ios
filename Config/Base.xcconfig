@@ -8,8 +8,9 @@ PORTWAY_APP_GROUP = group.$(PORTWAY_BUNDLE_ID)
 PORTWAY_IMPORT_SCHEME = portway
 PORTWAY_FALLBACK_DNS = 1.1.1.1
 PORTWAY_PANEL_URL =
-// Off until the panel has agreed the iOS wire shape. See PANEL.md.
-PORTWAY_SESSION_PROTOCOL = NO
+// The one-device session protocol (register/claim/heartbeat/release). The panel confirmed the
+// iOS wire shape against its stored rows (mikrotik-manager db8041e). See PANEL.md.
+PORTWAY_SESSION_PROTOCOL = YES
 DEVELOPMENT_TEAM =
 
 MARKETING_VERSION = 1.0.0
