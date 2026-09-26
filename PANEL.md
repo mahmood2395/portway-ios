@@ -97,11 +97,20 @@ parameter and returns the Android manifest does nothing. `url` must be `https`, 
 `itms-beta` (App Store or TestFlight). There is no sha256 and no same-origin rule: iOS installs,
 not the app. Below `min_supported_build` the card cannot be dismissed.
 
-## 9. Deep link
+## 9. Deep link: the peer page's import button
 
-No change. `portway://import?c=<base64url>&name=…` is handled identically, so the peer page's
-existing button works on iPhone too. iOS additionally opens `.conf` and `.zip` files shared from
-Files, Mail or a chat app.
+No change to the link. `portway://import?c=<base64url>&name=…`, built in
+`resources/views/public/peer.blade.php`, is handled identically: one tap opens Portway on its
+"<name> is ready" screen, and one more saves it. The only panel change needed is to **show that
+button to iPhone browsers too**. Today it sits inside `@if($isAndroid)`. The APK download below it
+stays Android-only, and the QR code and `.conf` download stay visible for everyone, because a
+custom scheme fails silently when the app is not installed.
+
+Safari asks "Open in Portway?" once when the button is tapped. That is iOS behaviour for custom
+schemes and only Universal Links avoid it, which would need an associated domain and a developer
+account, and isn't needed for a button on one page.
+
+iOS additionally opens `.conf` and `.zip` files shared from Files, Mail or a chat app.
 
 ## Turning it on
 
@@ -109,33 +118,3 @@ Once the panel confirms the **stored row** (not just a 200 response) for a regis
 heartbeat and release sent by an iOS build, set `PORTWAY_SESSION_PROTOCOL = YES` in
 `Config/Local.xcconfig` and ship.
 
-## 10. One-tap import link (proposed, with the Android session in agreement)
-
-Today's button, `portway://import?c=<whole .conf>`, has two problems:
-
-- Chat apps (Telegram, WhatsApp) often don't make custom schemes tappable.
-- The private key sits in the URL, so it ends up in chat and browser history.
-
-Proposal:
-
-1. **The panel mints a token** per peer: 128-bit random, single-use, expires in 24 h.
-   The link is `https://<link host>/i/<token>`.
-2. **`GET /i/<token>` is an ordinary web page and must not consume the token,** because chat
-   previews fetch it. It shows:
-   - "Open in Portway" → `portway://import?t=<token>&h=<link host>` (the `c=` form still works)
-   - the QR code and the `.conf` download
-   - App Store / TestFlight and APK links
-3. **The app redeems it:** `POST https://<link host>/api/import/redeem {"token": "…", "platform": "ios"}`
-   → `200 {"conf": "<wg-quick>", "name": "…"}` · `410` used or expired · `404` unknown. Only this
-   call consumes the token.
-4. **Universal Links and App Links:** `https://<link host>/.well-known/apple-app-site-association`
-   (appID `<TEAMID>.<bundle id>`, path `/i/*`) and `/.well-known/assetlinks.json`. With those,
-   tapping the https link in a chat opens the app directly, one tap to the confirmation screen.
-   The link host goes in the build's `PORTWAY_LINK_HOST` (git-ignored `Local.xcconfig`), never in
-   this public repo.
-5. **A stable link host, separate from the panel, is preferred.** Universal and App Links are
-   fixed in the installed build, while `panel_url` can move.
-
-**iOS status:** both link forms are parsed, and redeeming is implemented and tested against
-`tools/mock_panel.py`. The Associated Domains entitlement is added once the link host is agreed,
-because it needs a paid developer account and the final host.

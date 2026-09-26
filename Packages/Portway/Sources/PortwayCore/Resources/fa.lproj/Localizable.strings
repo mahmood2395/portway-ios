@@ -208,10 +208,6 @@
 "import_error" = "وارد کردن کانفیگ ممکن نشد: ⁨%@⁩";
 "import_error_title" = "وارد کردن ممکن نشد";
 "import_from_qr_code" = "وارد کردن کانفیگ از کد QR";
-"import_link_expired" = "این لینک قبلاً استفاده شده یا منقضی شده است. از ارائه‌دهنده‌تان لینک تازه بخواهید.";
-"import_link_opening" = "در حال باز کردن لینک…";
-"import_link_unavailable" = "لینک باز نشد — سرور ارائه‌دهنده پاسخ نداد. کمی بعد دوباره امتحان کنید.";
-"import_link_unknown" = "این لینک معتبر نیست. از ارائه‌دهنده‌تان لینک تازه بخواهید.";
 "import_partial_success_one" = "%1$d کانفیگ از %2$d کانفیگ وارد شد";
 "import_partial_success_other" = "%1$d کانفیگ از %2$d کانفیگ وارد شد";
 "import_success" = "«⁨%@⁩» وارد شد";

@@ -76,15 +76,6 @@ def make_handler(log_path, base_url):
                 if key.startswith("SUPERSEDE"):
                     return self.reply(200, {"active": False, "superseded_by_device_name": "Google Pixel 7"})
                 return self.reply(200, {"active": True})
-            if url.path == "/api/import/redeem":
-                token = body.get("token", "")
-                if token.startswith("USED"):
-                    return self.reply(410, {"error": "used"})
-                if not token.startswith("GOOD"):
-                    return self.reply(404)
-                return self.reply(200, {"conf": "[Interface]\nPrivateKey = aaaa\nAddress = 10.99.0.2/32\n\n[Peer]\n"
-                                                "PublicKey = bbbb\nAllowedIPs = 0.0.0.0/0\nEndpoint = vpn.example.net:51820\n",
-                                        "name": "beta-frankfurt"})
             if url.path in ("/api/peer/device/register", "/api/peer/session/release"):
                 return self.reply(200, {"ok": True})
             self.reply(404)

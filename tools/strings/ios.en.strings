@@ -83,8 +83,3 @@
 "vpn_connection_failed" = "The tunnel could not start. Check the config, then try again.";
 "locked_since_boot" = "Unlock your iPhone once after restarting — the VPN connects then.";
 
-/* One-tap import links (token form). */
-"import_link_opening" = "Opening the link…";
-"import_link_expired" = "This link has already been used or has expired. Ask your provider for a new one.";
-"import_link_unknown" = "This link is not valid. Ask your provider for a new one.";
-"import_link_unavailable" = "The link could not be opened — the provider's server did not answer. Try again in a moment.";
