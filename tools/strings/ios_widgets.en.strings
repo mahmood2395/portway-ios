@@ -1,0 +1,38 @@
+/*
+ * Portway — iOS-only strings for App Intents (Shortcuts/Siri/Control Center) and the widgets.
+ *
+ * Merged into PortwayCore and Shared/Localization by tools/import_android_strings.py.
+ * Keys already defined there and reused as-is (do not duplicate them here): hero_protected,
+ * hero_not_protected, hero_no_handshake, hero_connecting, tunnel_status_active,
+ * tunnel_status_inactive, detail_connect, detail_disconnect.
+ */
+
+/* App Intents: Connect */
+"intent_connect_title" = "Connect";
+"intent_connect_description" = "Connect Portway's VPN.";
+"intent_param_config" = "Configuration";
+
+/* App Intents: Disconnect */
+"intent_disconnect_title" = "Disconnect";
+"intent_disconnect_description" = "Disconnect Portway's VPN.";
+
+/* App Intents: Toggle */
+"intent_toggle_title" = "Toggle VPN";
+"intent_toggle_description" = "Turn Portway's VPN on or off.";
+
+/* App Intents: Status */
+"intent_status_title" = "VPN Status";
+"intent_status_description" = "Check whether Portway is connected.";
+"intent_status_connected" = "Connected · %@";
+"intent_status_connected_silent" = "Connected · %@ (not reaching the server)";
+
+/* Home Screen / Lock Screen status widget */
+"widget_status_display_name" = "Portway";
+"widget_status_description" = "Shows whether the VPN is on and how long it's been connected.";
+"widget_no_config" = "No configuration";
+
+/* Control Center toggle (iOS 18+) */
+"widget_control_display_name" = "Portway VPN";
+"widget_control_description" = "Turn the VPN on or off from Control Center.";
+
+"widget_control_value" = "VPN on";

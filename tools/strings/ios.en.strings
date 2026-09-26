@@ -1,0 +1,84 @@
+/* iOS-only strings, and iOS wording for Android sentences that do not fit. Wins over Android. */
+
+/* App Store 3.1.3(f): no call to action for purchasing outside the app. Neutral, factual. */
+"expiry_soon_text" = "%1$@ will stop connecting when the plan ends. Your provider can extend it.";
+"expiry_today_text" = "%1$@ will stop connecting once the plan ends today. Your provider can extend it.";
+
+"a11y_back" = "Back";
+"a11y_copy" = "Copies the value";
+"ok" = "OK";
+"done" = "Done";
+"none" = "None";
+"not_set" = "Not set";
+"error_title" = "Something went wrong";
+"import_error_title" = "Could not import";
+"parse_error_line" = "Cannot read the line “%1$@”";
+
+"configs_footnote_ios" = "These are the configs you were given — Portway has no server list of its own. The city under each name is resolved from the peer's IP, not chosen from a menu. Tapping one switches to it; iOS keeps one VPN up at a time.";
+
+"onboard_kicker_ios_2" = "Before you start";
+"onboard_title_ios_2" = "iOS will ask once.";
+"onboard_body_ios_2" = "The first time you save a config, iOS asks whether Portway may add VPN configurations. That is the system's own dialog — Portway cannot skip or fake it. Your configs then appear under Settings → VPN.";
+"onboard_kicker_ios_data" = "What is shared";
+"onboard_title_ios_data" = "What Portway sends, and to whom.";
+"onboard_body_ios_data" = "Only to the panel of the provider who gave you the config — never to Portway's developer, never to advertisers, never sold:\n\n• the config's public key and address, to look up your plan and days left\n• a random ID for this install, the device model and the iOS and app versions, so a config is used on one device at a time\n• while connected, once a minute: whether the server is answering, how long since the last handshake, bytes moved this session, restarts and Wi-Fi or mobile\n\nYour private key, the sites you visit and your traffic never leave the tunnel. To show the city a server is in, Portway may ask a public location service — only through the tunnel, so it sees the server, not you.";
+"onboard_cta_ios_data" = "I understand";
+"onboard_kicker_ios_4" = "Last step";
+"onboard_file" = "Import a .conf file instead";
+
+"confirm_save_connect" = "Save and connect";
+"confirm_save" = "Save config";
+"confirm_system_prompt_note" = "iOS will ask to add a VPN configuration. That is expected — allow it once.";
+"import_batch" = "Config";
+"import_batch_value" = "%1$d of %2$d";
+
+"scan_title" = "Scan provider code";
+"scan_hint" = "Point the camera at the QR code your provider sent you. Nothing leaves the phone.";
+"scan_unavailable" = "This device cannot scan with the camera. Choose a screenshot of the code instead.";
+"scan_from_photos" = "Choose a screenshot from Photos";
+
+"detail_resolved_address" = "Resolved address";
+"detail_restarts" = "Restarts this session";
+"quota_remaining" = "%1$@ remaining";
+
+"editor_unlock" = "Unlock to edit";
+"editor_auth_reason" = "The config contains your private key.";
+"export_auth_reason" = "The export contains your private keys.";
+"zip_export_summary_ios" = "Every config in one zip, to save or send. It contains private keys.";
+
+"settings_category_protection" = "Protection";
+"kill_switch_title" = "Kill switch";
+"kill_switch_summary" = "Block all traffic outside the tunnel, including while it reconnects.";
+"local_network_title" = "Allow local network";
+"local_network_summary" = "Printers, AirDrop and the router's own page keep working.";
+"always_on_title" = "Always on";
+"always_on_summary" = "iOS reconnects the tunnel after a restart and whenever it drops.";
+"trusted_wifi_title" = "Trusted Wi-Fi";
+"trusted_wifi_summary" = "Networks where Always on stands down.";
+"trusted_wifi_explain" = "On these Wi-Fi networks the tunnel is disconnected automatically. Type the network name exactly as it appears.";
+"trusted_wifi_placeholder" = "Network name";
+"panel_url_summary_ios" = "Where account figures and the one-device check come from.";
+"panel_url_explain" = "Leave empty to use the panel this app was built with.";
+"panel_built_in" = "Built in";
+"panel_custom" = "Custom";
+"app_lock_title" = "Require Face ID";
+"app_lock_summary" = "Lock Portway when it goes to the background.";
+"app_lock_reason" = "Unlock Portway";
+"app_lock_unlock" = "Unlock";
+"log_viewer_pref_summary_ios" = "Useful if something will not connect.";
+"settings_footer" = "Portway %1$@ (%2$@) · WireGuard\nFree software. Your keys never leave this device.";
+
+"session_superseded_title_stayed" = "In use on another device";
+"session_superseded_stayed" = "Always on kept this device connected; turn it off here, or use the config on one device only.";
+
+/* iOS says "configs" throughout; Android's upstream titles still say "tunnels". */
+"zip_export_title" = "Export configs";
+"auto_reconnect_title" = "Restart stalled configs";
+
+/* NetworkExtension errors, in words a user can act on. */
+"simulator_no_vpn" = "The iOS Simulator cannot store or start VPN configurations. The config is kept in memory so you can look around; on an iPhone it is saved normally.";
+"vpn_permission_denied" = "Portway could not add the VPN configuration. If iOS asked, choose Allow — or turn it on in Settings → General → VPN & Device Management.";
+"vpn_configuration_invalid" = "iOS rejected this configuration. Try importing it again.";
+"vpn_configuration_stale" = "The configuration changed in the meantime. Please try again.";
+"vpn_connection_failed" = "The tunnel could not start. Check the config, then try again.";
+"locked_since_boot" = "Unlock your iPhone once after restarting — the VPN connects then.";

@@ -1,0 +1,218 @@
+# XcodeGen spec — `xcodegen generate` writes Portway.xcodeproj (which is git-ignored).
+#
+# Four targets:
+#   Portway            the SwiftUI app
+#   PortwayTunnel      NEPacketTunnelProvider — WireGuard, watchdog, heartbeat, usage
+#   PortwayWidgets     widgets, Control Center control, Live Activity
+#   WireGuardGoBridge  builds libwg-go.a from Vendor/WireGuardKit/Sources/WireGuardKitGo with make
+name: Portway
+
+options:
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  developmentLanguage: en
+
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    DEAD_CODE_STRIPPING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: NO
+    CODE_SIGN_STYLE: Automatic
+    # The simulator needs no Apple Developer account: sign ad hoc there, so the project runs
+    # from Xcode before a team exists. Device builds still use the team in Local.xcconfig.
+    "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": "-"
+    "CODE_SIGN_STYLE[sdk=iphonesimulator*]": Manual
+    "DEVELOPMENT_TEAM[sdk=iphonesimulator*]": ""
+
+packages:
+  Portway:
+    path: Packages/Portway
+
+targets:
+  WireGuardGoBridge:
+    type: ""
+    platform: iOS
+    legacy:
+      toolPath: /usr/bin/make
+      arguments: $(ACTION)
+      workingDirectory: Vendor/WireGuardKit/Sources/WireGuardKitGo
+      passSettings: true
+
+  Portway:
+    type: application
+    platform: iOS
+    sources:
+      - path: App/Sources
+      - path: App/Resources
+      - path: Shared
+    dependencies:
+      - target: WireGuardGoBridge
+      - package: Portway
+        product: PortwayKit
+      - package: Portway
+        product: PortwayCore
+      - target: PortwayTunnel
+        embed: true
+      - target: PortwayWidgets
+        embed: true
+    entitlements:
+      path: App/Portway.entitlements
+      properties:
+        com.apple.developer.networking.networkextension: [packet-tunnel-provider]
+        com.apple.security.application-groups: [$(PORTWAY_APP_GROUP)]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Portway
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, fa]
+        PortwayAppGroup: $(PORTWAY_APP_GROUP)
+        PortwayPanelURL: $(PORTWAY_PANEL_URL)
+        PortwayImportScheme: $(PORTWAY_IMPORT_SCHEME)
+        PortwayFallbackDNS: $(PORTWAY_FALLBACK_DNS)
+        PortwaySessionProtocol: $(PORTWAY_SESSION_PROTOCOL)
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIAppFonts:
+          - Inter-Regular.ttf
+          - Inter-SemiBold.ttf
+          - Vazirmatn-UI-Regular.ttf
+          - Vazirmatn-UI-SemiBold.ttf
+        CFBundleURLTypes:
+          - CFBundleURLName: $(PORTWAY_BUNDLE_ID).import
+            CFBundleURLSchemes: [$(PORTWAY_IMPORT_SCHEME)]
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.wireguard.config.quick
+            UTTypeDescription: WireGuard configuration
+            UTTypeConformsTo: [public.text]
+            UTTypeTagSpecification:
+              public.filename-extension: [conf]
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: WireGuard configuration
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [com.wireguard.config.quick, public.zip-archive]
+        LSSupportsOpeningDocumentsInPlace: false
+        NSCameraUsageDescription: Portway uses the camera only to read the QR code your provider sent. Nothing is recorded.
+        NSFaceIDUsageDescription: Portway uses Face ID to protect your private keys and, if you turn it on, the app itself.
+        NSSupportsLiveActivities: true
+        BGTaskSchedulerPermittedIdentifiers: [$(PORTWAY_BUNDLE_ID).refresh]
+        UIBackgroundModes: [fetch]
+        ITSAppUsesNonExemptEncryption: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PORTWAY_BUNDLE_ID)
+        PRODUCT_NAME: Portway
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  PortwayTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Tunnel
+    dependencies:
+      - target: WireGuardGoBridge
+      - package: Portway
+        product: PortwayKit
+      - package: Portway
+        product: PortwayCore
+    entitlements:
+      path: Tunnel/PortwayTunnel.entitlements
+      properties:
+        com.apple.developer.networking.networkextension: [packet-tunnel-provider]
+        com.apple.security.application-groups: [$(PORTWAY_APP_GROUP)]
+    info:
+      path: Tunnel/Info.plist
+      properties:
+        CFBundleDisplayName: Portway Tunnel
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        PortwayAppGroup: $(PORTWAY_APP_GROUP)
+        PortwayPanelURL: $(PORTWAY_PANEL_URL)
+        PortwayImportScheme: $(PORTWAY_IMPORT_SCHEME)
+        PortwayFallbackDNS: $(PORTWAY_FALLBACK_DNS)
+        PortwaySessionProtocol: $(PORTWAY_SESSION_PROTOCOL)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).PacketTunnelProvider
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PORTWAY_BUNDLE_ID).tunnel
+        PRODUCT_NAME: PortwayTunnel
+
+  PortwayWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widgets
+      - path: Shared
+    dependencies:
+      - package: Portway
+        product: PortwayCore
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    entitlements:
+      path: Widgets/PortwayWidgets.entitlements
+      properties:
+        com.apple.developer.networking.networkextension: [packet-tunnel-provider]
+        com.apple.security.application-groups: [$(PORTWAY_APP_GROUP)]
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: Portway
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        PortwayAppGroup: $(PORTWAY_APP_GROUP)
+        PortwayPanelURL: $(PORTWAY_PANEL_URL)
+        PortwayImportScheme: $(PORTWAY_IMPORT_SCHEME)
+        PortwaySessionProtocol: $(PORTWAY_SESSION_PROTOCOL)
+        UIAppFonts:
+          - Inter-Regular.ttf
+          - Inter-SemiBold.ttf
+          - Vazirmatn-UI-Regular.ttf
+          - Vazirmatn-UI-SemiBold.ttf
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PORTWAY_BUNDLE_ID).widgets
+        PRODUCT_NAME: PortwayWidgets
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+schemes:
+  Portway Demo:
+    build:
+      targets:
+        Portway: all
+    run:
+      config: Debug
+      commandLineArguments:
+        "-demo": true
+        "-en": false
+        "-fa": false
+        "-light": false
+        "-demo-silent": false
+        "-onboarding": false
+  Portway:
+    build:
+      targets:
+        Portway: all
+    run:
+      config: Debug
+    archive:
+      config: Release

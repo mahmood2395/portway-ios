@@ -1,0 +1,39 @@
+/*
+ * Portway — رشته‌های اختصاصی iOS برای اکشن‌های برنامه (میان‌برها/سیری/مرکز کنترل) و ابزارک‌ها.
+ *
+ * هنوز به Packages/Portway/Sources/PortwayCore/Resources الحاق نشده — این کلیدها را به مسئول
+ * Localizable.strings آن پکیج بسپارید؛ این کلیدها افزودنی‌اند و چیزی را جایگزین نمی‌کنند. کلیدهایی
+ * که همان‌جا تعریف شده و بی‌تغییر از آن‌ها استفاده می‌شود (اینجا تکرار نشوند): hero_protected،
+ * hero_not_protected، hero_no_handshake، hero_connecting، tunnel_status_active،
+ * tunnel_status_inactive، detail_connect، detail_disconnect.
+ */
+
+/* اکشن‌های برنامه: اتصال */
+"intent_connect_title" = "اتصال";
+"intent_connect_description" = "اتصال VPN در Portway.";
+"intent_param_config" = "پیکربندی";
+
+/* اکشن‌های برنامه: قطع اتصال */
+"intent_disconnect_title" = "قطع اتصال";
+"intent_disconnect_description" = "قطع VPN در Portway.";
+
+/* اکشن‌های برنامه: تغییر وضعیت */
+"intent_toggle_title" = "تغییر وضعیت VPN";
+"intent_toggle_description" = "روشن یا خاموش کردن VPN در Portway.";
+
+/* اکشن‌های برنامه: وضعیت */
+"intent_status_title" = "وضعیت VPN";
+"intent_status_description" = "بررسی اتصال Portway.";
+"intent_status_connected" = "متصل · ⁨%@⁩";
+"intent_status_connected_silent" = "متصل · ⁨%@⁩ (عدم دسترسی به سرور)";
+
+/* ابزارک وضعیت (صفحه‌ی اصلی / صفحه‌ی قفل) */
+"widget_status_display_name" = "Portway";
+"widget_status_description" = "نمایش وضعیت VPN و مدت‌زمان اتصال.";
+"widget_no_config" = "بدون پیکربندی";
+
+/* دکمه‌ی مرکز کنترل (iOS 18 به بعد) */
+"widget_control_display_name" = "VPN Portway";
+"widget_control_description" = "روشن یا خاموش کردن VPN از مرکز کنترل.";
+
+"widget_control_value" = "VPN روشن";

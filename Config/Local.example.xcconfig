@@ -1,0 +1,8 @@
+// Copy to Config/Local.xcconfig (git-ignored) and fill in.
+//
+// xcconfig treats "//" as a comment, so a URL must be split with $() as below.
+
+DEVELOPMENT_TEAM = ABCDE12345
+PORTWAY_BUNDLE_ID = com.example.portway
+PORTWAY_PANEL_URL = https:/$()/panel.example.com
+// PORTWAY_SESSION_PROTOCOL = YES
