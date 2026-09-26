@@ -8,6 +8,15 @@
 // confirmation screen as a QR scan, and nothing is written until the user saves.
 //
 // The private key travels in the URL. Failures are logged by reason only — never the payload.
+//
+// The token form (proposed to the panel, see PANEL.md → "One-tap import") keeps the key out of
+// the link entirely and is an https URL, which chat apps make tappable where a custom scheme is not:
+//
+//     https://<link host>/i/<token>              (Universal Link: opens the app directly)
+//     portway://import?t=<token>&h=<link host>   (the page's "Open in Portway" button)
+//
+// The app redeems the token over HTTPS for the config text. Only that POST consumes it; a chat
+// app's link preview fetching the page does not.
 
 import Foundation
 
@@ -21,6 +30,45 @@ public enum DeepLink {
     public struct Payload: Sendable, Equatable {
         public var configText: String
         public var suggestedName: String?
+
+        public init(configText: String, suggestedName: String?) {
+            self.configText = configText
+            self.suggestedName = suggestedName
+        }
+    }
+
+    public struct Token: Sendable, Equatable {
+        public var token: String
+        /// Where to redeem it: the host that issued the link.
+        public var host: String
+    }
+
+    /// A token link in either form, or nil if `url` is not one.
+    public static func token(in url: URL, scheme: String = PortwayEnvironment.importScheme) -> Token? {
+        let parts = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        switch url.scheme?.lowercased() {
+        case scheme.lowercased():
+            guard url.host?.lowercased() == "import",
+                  let t = parts?.queryItems?.first(where: { $0.name == "t" })?.value,
+                  let h = parts?.queryItems?.first(where: { $0.name == "h" })?.value else { return nil }
+            return validated(t, h)
+        case "https":
+            let path = url.pathComponents   // ["/", "i", "<token>"]
+            guard path.count == 3, path[1] == "i", let host = url.host else { return nil }
+            return validated(path[2], host)
+        default:
+            return nil
+        }
+    }
+
+    private static func validated(_ token: String, _ host: String) -> Token? {
+        let tokenOK = (16...128).contains(token.count)
+            && token.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == "_") }
+        // A bare host name: no scheme, port, path or credentials can be smuggled in.
+        let hostOK = (1...253).contains(host.count)
+            && host.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
+            && !host.hasPrefix(".") && !host.hasSuffix(".") && host.contains(".")
+        return tokenOK && hostOK ? Token(token: token, host: host.lowercased()) : nil
     }
 
     public static func parse(_ url: URL, scheme: String = PortwayEnvironment.importScheme) -> Result<Payload, Failure> {

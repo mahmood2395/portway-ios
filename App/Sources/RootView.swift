@@ -40,6 +40,18 @@ struct RootView: View {
                 }
             }
         }
+        .overlay {
+            if app.redeeming {
+                VStack(spacing: 12) {
+                    ProgressView().tint(PW.accent300)
+                    Text(L.tr("import_link_opening")).font(PW.font(13.5)).foregroundStyle(PW.textSecondary)
+                }
+                .padding(24)
+                .card()
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: app.redeeming)
         .animation(.easeOut(duration: 0.25), value: app.showOnboarding)
         // Not while locked: a link opened on a locked app waits for the unlock.
         .sheet(item: Binding(get: { app.locked ? nil : app.pendingImport }, set: { app.pendingImport = $0 })) { batch in

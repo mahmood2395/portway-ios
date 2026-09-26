@@ -108,3 +108,34 @@ Files, Mail or a chat app.
 Once the panel confirms the **stored row** (not just a 200 response) for a register, claim,
 heartbeat and release sent by an iOS build, set `PORTWAY_SESSION_PROTOCOL = YES` in
 `Config/Local.xcconfig` and ship.
+
+## 10. One-tap import link (proposed, with the Android session in agreement)
+
+Today's button, `portway://import?c=<whole .conf>`, has two problems:
+
+- Chat apps (Telegram, WhatsApp) often don't make custom schemes tappable.
+- The private key sits in the URL, so it ends up in chat and browser history.
+
+Proposal:
+
+1. **The panel mints a token** per peer: 128-bit random, single-use, expires in 24 h.
+   The link is `https://<link host>/i/<token>`.
+2. **`GET /i/<token>` is an ordinary web page and must not consume the token,** because chat
+   previews fetch it. It shows:
+   - "Open in Portway" → `portway://import?t=<token>&h=<link host>` (the `c=` form still works)
+   - the QR code and the `.conf` download
+   - App Store / TestFlight and APK links
+3. **The app redeems it:** `POST https://<link host>/api/import/redeem {"token": "…", "platform": "ios"}`
+   → `200 {"conf": "<wg-quick>", "name": "…"}` · `410` used or expired · `404` unknown. Only this
+   call consumes the token.
+4. **Universal Links and App Links:** `https://<link host>/.well-known/apple-app-site-association`
+   (appID `<TEAMID>.<bundle id>`, path `/i/*`) and `/.well-known/assetlinks.json`. With those,
+   tapping the https link in a chat opens the app directly, one tap to the confirmation screen.
+   The link host goes in the build's `PORTWAY_LINK_HOST` (git-ignored `Local.xcconfig`), never in
+   this public repo.
+5. **A stable link host, separate from the panel, is preferred.** Universal and App Links are
+   fixed in the installed build, while `panel_url` can move.
+
+**iOS status:** both link forms are parsed, and redeeming is implemented and tested against
+`tools/mock_panel.py`. The Associated Domains entitlement is added once the link host is agreed,
+because it needs a paid developer account and the final host.

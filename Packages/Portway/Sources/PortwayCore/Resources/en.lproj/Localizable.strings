@@ -211,6 +211,10 @@
 "import_error" = "Unable to import tunnel: %@";
 "import_error_title" = "Could not import";
 "import_from_qr_code" = "Import Tunnel from QR Code";
+"import_link_expired" = "This link has already been used or has expired. Ask your provider for a new one.";
+"import_link_opening" = "Opening the link…";
+"import_link_unavailable" = "The link could not be opened — the provider's server did not answer. Try again in a moment.";
+"import_link_unknown" = "This link is not valid. Ask your provider for a new one.";
 "import_partial_success_one" = "Imported %1$d of %2$d tunnels";
 "import_partial_success_other" = "Imported %1$d of %2$d tunnels";
 "import_success" = "Imported “%@”";

@@ -54,6 +54,8 @@ final class AppState {
     /// Kept here, not in the view: switching language re-creates the view tree.
     var onboardingStep = 0
     var importError: String?
+    /// A one-tap link is being exchanged for its config.
+    var redeeming = false
     var locked = PortwaySettings.shared.appLock
 
     var colorScheme: ColorScheme? {
@@ -127,9 +129,32 @@ final class AppState {
             importFile(url)
             return
         }
+        if let token = DeepLink.token(in: url) {
+            redeem(token)
+            return
+        }
         switch ConfigImporter.candidate(fromLink: url) {
         case .success(let candidate): stage([candidate])
         case .failure: importError = L.tr("deep_link_import_error")
+        }
+    }
+
+    /// One-tap link: exchange the token for the config, then the usual confirmation screen.
+    private func redeem(_ token: DeepLink.Token) {
+        guard !redeeming else { return }
+        redeeming = true
+        Task {
+            defer { redeeming = false }
+            switch await ImportRedeemer.redeem(token) {
+            case .success(let payload):
+                importText(payload.configText, name: payload.suggestedName)
+            case .failure(.expired):
+                importError = L.tr("import_link_expired")
+            case .failure(.unknown):
+                importError = L.tr("import_link_unknown")
+            case .failure(.unavailable):
+                importError = L.tr("import_link_unavailable")
+            }
         }
     }
 
